@@ -324,8 +324,8 @@ protected void decryptText() {
     }
 
     try {
-        BigInteger a = new BigInteger(aText);
-        BigInteger p = new BigInteger(pText);
+        BigInteger a = new BigInteger((aText),16);
+        BigInteger p = new BigInteger((pText),16);
 
         // Parsowanie szyfrogramu z formatu np. "(c1,c2)" lub "c1 c2"
         String[] parts = encryptedText.replaceAll("[^0-9, ]", "").split("[, ]+");
@@ -343,7 +343,7 @@ protected void decryptText() {
         BigInteger decrypted = ElGamal.decrypt(cipher, privateKey);
         String message = new String(decrypted.toByteArray(), StandardCharsets.UTF_8);
 
-        encryptedTextField.setText(message);
+        inputTextField.setText(message);
         informationBlock.setText("Sukces: Odszyfrowano wiadomość.");
 
     } catch (NumberFormatException e) {
