@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" minHeight="514.0" minWidth="656.0" prefHeight="795.0" prefWidth="802.0" spacing="10.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.elgamal.KryptoController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <GridPane>
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="375.0" minWidth="10.0" prefWidth="190.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="588.0" minWidth="10.0" prefWidth="570.0" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+        <children>
+            <Label text="Klucz" />
+            <TextField fx:id="informationBlock" promptText="Dziennik zdarzeń" GridPane.columnIndex="1" />
+        </children>
+    </GridPane>
+    <Separator prefWidth="200.0" />
+    <GridPane>
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="376.20001220703125" minWidth="10.0" prefWidth="171.40000915527344" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="648.9999847412109" minWidth="10.0" prefWidth="590.5999908447266" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+        <children>
+
+            <Button onAction="#onGenerateKeyClick" text="Generuj losowy klucz" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label text="Wygeneruj klucz" GridPane.rowIndex="4" />
+         <Label text="Klucz Publiczny: g" />
+         <Label text="Klucz Publiczy: h" GridPane.rowIndex="1" />
+         <Label text="Klucz Prywatny: a" GridPane.rowIndex="2" />
+         <Label text="MOD N" GridPane.rowIndex="3" />
+            <TextField fx:id="keyTextField1" prefHeight="26.0" prefWidth="295.0" promptText="Klucz" GridPane.columnIndex="1" />
+         <TextField fx:id="keyTextField2" prefHeight="26.0" prefWidth="295.0" promptText="Klucz" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+         <TextField fx:id="keyTextField3" prefHeight="26.0" prefWidth="295.0" promptText="Klucz" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+         <TextField fx:id="keyTextField4" prefHeight="26.0" prefWidth="295.0" promptText="Klucz" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        </children>
+    </GridPane>
+    <Separator prefWidth="200.0" />
+    <GridPane>
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+        <children>
+            <TextField prefHeight="26.0" prefWidth="295.0" promptText="Plik" GridPane.rowIndex="1" />
+            <TextField prefHeight="26.0" prefWidth="295.0" promptText="Plik" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <Label text="Wczytaj klucz z pliku" />
+            <Label text="Zapisz klucz do pliku" GridPane.columnIndex="2" />
+            <Button mnemonicParsing="false" onAction="#onLoadKeysClick" text="Wczcytaj" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Button mnemonicParsing="false" onAction="#onSaveKeysClick" text="Zapisz" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        </children>
+    </GridPane>
+    <Separator prefWidth="200.0" />
+    <GridPane>
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+        <children>
+            <Label text="Szyfrowanie/Deszyfrowanie" />
+        </children>
+    </GridPane>
+    <Separator prefWidth="200.0" />
+    <GridPane>
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="254.999951171875" minWidth="10.0" prefWidth="181.6" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="212.00002441406247" minWidth="10.0" prefWidth="99.20002441406248" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="212.00002441406247" minWidth="10.0" prefWidth="198.3999755859375" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="177.0" minWidth="10.0" prefWidth="167.99990234374997" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="132.00006103515625" minWidth="10.0" prefWidth="109.60009765625" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+        <children>
+            <Label text="Wybierz plik do szyfrowania" />
+            <Label text="Otwórz plik zaszyfrowany" GridPane.columnIndex="3" />
+            <Button mnemonicParsing="false" onAction="#onLoadFileClick" prefHeight="30.0" prefWidth="156.0" text="Otwórz" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Button mnemonicParsing="false" onAction="#onLoadFileDecryptClick" prefHeight="30.0" prefWidth="127.0" text="Otwórz" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+            <TextField fx:id="filePathEncrypt" promptText="Plik" GridPane.rowIndex="1" />
+            <TextField fx:id="filePathDecrypt" promptText="Plik" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+            <Separator prefWidth="200.0" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+        </children>
+    </GridPane>
+    <GridPane>
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="254.999951171875" minWidth="10.0" prefWidth="187.99996337890624" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="212.00002441406247" minWidth="10.0" prefWidth="93.60003662109378" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="212.00002441406247" minWidth="10.0" prefWidth="198.3999755859375" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="177.800048828125" minWidth="10.0" prefWidth="177.800048828125" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="132.00006103515625" minWidth="10.0" prefWidth="102.59995117187498" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+        <children>
+            <Label text="Wybierz plik z tekstem jawnym" />
+            <Label prefWidth="178.0" text="Wybierz plik z szyfrogramem" GridPane.columnIndex="3" />
+            <Button mnemonicParsing="false" onAction="#onLoadPlaintextFileClick" prefHeight="30.0" prefWidth="156.0" text="Otwórz" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Button mnemonicParsing="false" onAction="#onLoadCiphertextFileClick" prefHeight="30.0" prefWidth="127.0" text="Otwórz" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+            <TextField fx:id="filePathEncryptJawny" promptText="Plik" GridPane.rowIndex="1" />
+            <TextField fx:id="filePathDecryptSzyfrogram" promptText="Plik" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+            <Separator prefWidth="200.0" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+        </children>
+    </GridPane>
+    <HBox prefHeight="205.0" prefWidth="762.0">
+        <children>
+            <TextArea fx:id="inputTextField" prefHeight="326.0" prefWidth="300.0" promptText="Tekst jawny" />
+            <VBox prefHeight="252.0" prefWidth="160.0">
+                <children>
+                    <Button mnemonicParsing="false" onAction="#onDecryptClick" prefHeight="30.0" prefWidth="223.0" text="&lt;- Deszyfruj" translateY="45.0" />
+                    <Button mnemonicParsing="false" onAction="#onEncryptClick" prefHeight="30.0" prefWidth="179.0" text="Szyfruj -&gt;" translateY="50.0" />
+                    <RadioButton fx:id="radioText" mnemonicParsing="false" prefHeight="30.0" prefWidth="165.0" selected="true" text="Z okna" translateX="10.0" translateY="50.0">
+                        <toggleGroup>
+                            <ToggleGroup fx:id="oknoplik" />
+                        </toggleGroup>
+                    </RadioButton>
+                    <RadioButton fx:id="radioFile" mnemonicParsing="false" prefHeight="30.0" prefWidth="164.0" text="Z pliku" toggleGroup="$oknoplik" translateX="10.0" translateY="50.0" />
+                </children>
+            </VBox>
+            <TextArea fx:id="encryptedTextField" prefHeight="333.0" prefWidth="300.0" promptText="Szyfrogram" />
+        </children>
+    </HBox>
+    <Separator prefWidth="200.0" />
+    <GridPane>
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="254.999951171875" minWidth="10.0" prefWidth="181.6" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="212.00002441406247" minWidth="10.0" prefWidth="99.20002441406248" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="212.00002441406247" minWidth="10.0" prefWidth="198.3999755859375" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="177.0" minWidth="10.0" prefWidth="167.99990234374997" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="132.00006103515625" minWidth="10.0" prefWidth="109.60009765625" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+        <children>
+            <Label text="Zapisz tekst jawny" />
+            <Label text="Zapisz szyfrogram" GridPane.columnIndex="3" />
+            <Button mnemonicParsing="false" onAction="#onSavePlaintextFileClick" prefHeight="30.0" prefWidth="156.0" text="Otwórz" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Button mnemonicParsing="false" onAction="#onSaveCiphertextFileClick" prefHeight="30.0" prefWidth="127.0" text="Otwórz" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+            <TextField fx:id="filePathSaveJawny" promptText="Plik" GridPane.rowIndex="1" />
+            <TextField fx:id="filePathSaveSzyfrogram" promptText="Plik" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+            <Separator prefWidth="200.0" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+            <Separator prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+        </children>
+    </GridPane>
+</VBox>
