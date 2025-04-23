@@ -19,8 +19,7 @@ public class KryptoController {
     private TextField informationBlock;
 
     @FXML
-    private TextField keyTextField1, keyTextField2, keyTextField3, keyTextField4;
-
+    private TextField keyTextField1, keyTextField2, keyTextField3, keyTextField4,loadKey;
 
     @FXML
     private TextArea inputTextField;
@@ -81,6 +80,25 @@ public class KryptoController {
             if (db.hasFiles()) {
                 File file = db.getFiles().get(0); // pierwszy plik
                 filePathDecrypt.setText(file.getAbsolutePath());
+                success = true;
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+        // Obsługa przeciągania pliku do pola loadKey
+        loadKey.setOnDragOver(event -> {
+            if (event.getGestureSource() != loadKey && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(javafx.scene.input.TransferMode.COPY);
+            }
+            event.consume();
+        });
+
+        loadKey.setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                File file = db.getFiles().get(0); // pierwszy plik
+                loadKey.setText(file.getAbsolutePath());
                 success = true;
             }
             event.setDropCompleted(success);
@@ -183,175 +201,91 @@ public class KryptoController {
         }
     }
 
-//    @FXML
-//    protected void encryptText() {
-//        informationBlock.setText("");
-//        encryptedTextField.setText("");
-//        String plainText = inputTextField.getText();
-//        String keyHex1 = keyTextField.getText();
-//        String keyHex2 = keyTextField2.getText();
-//        String keyHex3 = keyTextField3.getText();
-//
-//        if (!isValidHexKey(keyHex1) || !isValidHexKey(keyHex2) || !isValidHexKey(keyHex3)) {
-//            //przed wpisaniem czyść pole informacyjne
-//
-//            informationBlock.setText("Błąd: Brak kluczy!");
-//            return;
-//        }
-//        if(plainText.isEmpty()) {
-//            informationBlock.setText("Błąd: Brak tekstu do szyfrowania!");
-//            return;
-//        }
-//        //wyswtlanie kluczy jako listy bajtów
-//        byte[] key1 = hexToBytes(keyHex1);
-//        byte[] key2 = hexToBytes(keyHex2);
-//        byte[] key3 = hexToBytes(keyHex3);
-//        System.out.println("Key 1: " + Arrays.toString(key1));
-//        System.out.println("Key 2: " + Arrays.toString(key2));
-//        System.out.println("Key 3: " + Arrays.toString(key3));
-//
-//        // Tworzenie klucza TripleDES
-//        TripleDES.Key key = new TripleDES.Key(hexToBytes(keyHex1), hexToBytes(keyHex2), hexToBytes(keyHex3));
-//
-//        // Szyfrowanie do Base64
-//        String encryptedBase64 = TripleDES.encryptToBase64(plainText.getBytes(StandardCharsets.UTF_8), key);
-//
-//        encryptedTextField.setText(encryptedBase64);
-//            //Szyfrownie do bajtów na hex
-////        byte[] encryptedBytes = TripleDES.encrypt3D(plainText.getBytes(StandardCharsets.UTF_8), key);
-////        String encryptedHex = bytesToHex(encryptedBytes);
-////        encryptedTextField.setText(encryptedHex);
-//        informationBlock.setText("Sukces: Szyfrowanie zakończone.");
-//    }
+    @FXML
+    protected void encryptText() {
+        informationBlock.setText("");
+        encryptedTextField.setText("");
+        String plainText = inputTextField.getText();
 
-@FXML
-protected void encryptText() {
-    informationBlock.setText("");
-    encryptedTextField.setText("");
-    String plainText = inputTextField.getText();
+        try {
+            BigInteger g = new BigInteger(keyTextField1.getText(), 16);
+            BigInteger h = new BigInteger(keyTextField2.getText(), 16);
+            BigInteger a = new BigInteger(keyTextField3.getText(), 16); // tylko do deszyfrowania, tu niepotrzebne
+            BigInteger p = new BigInteger(keyTextField4.getText(), 16);
 
-    try {
-        BigInteger g = new BigInteger(keyTextField1.getText(), 16);
-        BigInteger h = new BigInteger(keyTextField2.getText(), 16);
-        BigInteger a = new BigInteger(keyTextField3.getText(), 16); // tylko do deszyfrowania, tu niepotrzebne
-        BigInteger p = new BigInteger(keyTextField4.getText(), 16);
+            ElGamal.PublicKey publicKey = new ElGamal.PublicKey(p, g, h);
 
-        ElGamal.PublicKey publicKey = new ElGamal.PublicKey(p, g, h);
+            if (plainText.isEmpty()) {
+                informationBlock.setText("Błąd: Brak tekstu!");
+                return;
+            }
 
-        if (plainText.isEmpty()) {
-            informationBlock.setText("Błąd: Brak tekstu!");
+            BigInteger m = new BigInteger(plainText.getBytes(StandardCharsets.UTF_8));
+
+            if (m.compareTo(p) >= 0) {
+                informationBlock.setText("Błąd: wiadomość zbyt duża dla p.");
+                return;
+            }
+
+            ElGamal.CipherText cipher = ElGamal.encrypt(m, publicKey);
+            encryptedTextField.setText(cipher.toString());
+            informationBlock.setText("Sukces: Zaszyfrowano wiadomość.");
+        } catch (NumberFormatException e) {
+            informationBlock.setText("Błąd: Klucze muszą być liczbami (HEX).");
+        } catch (Exception e) {
+            informationBlock.setText("Błąd szyfrowania: " + e.getMessage());
+        }
+    }
+
+
+    @FXML
+    protected void decryptText() {
+        informationBlock.setText("");
+
+
+        String encryptedText = encryptedTextField.getText();
+        String aText = keyTextField3.getText(); // prywatny klucz
+        String pText = keyTextField4.getText(); // p
+
+        if (encryptedText.isEmpty()) {
+            informationBlock.setText("Błąd: Brak szyfrogramu do odszyfrowania!");
             return;
         }
 
-        BigInteger m = new BigInteger(plainText.getBytes(StandardCharsets.UTF_8));
-
-        if (m.compareTo(p) >= 0) {
-            informationBlock.setText("Błąd: wiadomość zbyt duża dla p.");
+        if (aText.isEmpty() || pText.isEmpty()) {
+            informationBlock.setText("Błąd: Brakuje klucza prywatnego (a) lub p!");
             return;
         }
 
-        ElGamal.CipherText cipher = ElGamal.encrypt(m, publicKey);
-        encryptedTextField.setText(cipher.toString());
-        informationBlock.setText("Sukces: Zaszyfrowano wiadomość.");
-    } catch (NumberFormatException e) {
-        informationBlock.setText("Błąd: Klucze muszą być liczbami (HEX).");
-    } catch (Exception e) {
-        informationBlock.setText("Błąd szyfrowania: " + e.getMessage());
-    }
-}
+        try {
+            BigInteger a = new BigInteger((aText),16);
+            BigInteger p = new BigInteger((pText),16);
 
+            // Parsowanie szyfrogramu z formatu np. "(c1,c2)" lub "c1 c2"
+            String[] parts = encryptedText.replaceAll("[^0-9, ]", "").split("[, ]+");
+            if (parts.length != 2) {
+                informationBlock.setText("Błąd: Nieprawidłowy format szyfrogramu!");
+                return;
+            }
 
+            BigInteger c1 = new BigInteger(parts[0]);
+            BigInteger c2 = new BigInteger(parts[1]);
 
+            ElGamal.PrivateKey privateKey = new ElGamal.PrivateKey(p, a);
+            ElGamal.CipherText cipher = new ElGamal.CipherText(c1, c2);
 
-//    @FXML
-//    protected void decryptText() {
-//        informationBlock.setText("");
-//        inputTextField.setText("");
-//        String encryptedText = encryptedTextField.getText();
-//        String encryptedHex = encryptedTextField.getText();
-//        String keyHex1 = keyTextField.getText();
-//        String keyHex2 = keyTextField2.getText();
-//        String keyHex3 = keyTextField3.getText();
-//
-//        if (!isValidHexKey(keyHex1) || !isValidHexKey(keyHex2) || !isValidHexKey(keyHex3)) {
-//            informationBlock.setText("Błąd: Brak kluczy!");
-//            return;
-//        }
-//        if(encryptedText.isEmpty()) {
-//            informationBlock.setText("Błąd: Brak szyfrogramu!");
-//            return;
-//        }
-//        byte[] key1 = hexToBytes(keyHex1);
-//        byte[] key2 = hexToBytes(keyHex2);
-//        byte[] key3 = hexToBytes(keyHex3);
-//        System.out.println("Key 1: " + Arrays.toString(key1));
-//        System.out.println("Key 2: " + Arrays.toString(key2));
-//        System.out.println("Key 3: " + Arrays.toString(key3));
-//
-//        // Tworzenie klucza TripleDES
-//        TripleDES.Key key = new TripleDES.Key(hexToBytes(keyHex1), hexToBytes(keyHex2), hexToBytes(keyHex3));
-//
-//        // Deszyfrowanie Base64
-//        byte[] decryptedData = TripleDES.decryptFromBase64(encryptedText, key);
-//        String decryptedText = new String(decryptedData, StandardCharsets.UTF_8);
-//
-//        inputTextField.setText(decryptedText);
-////          //Deszyfroawnie do bajtów na hex
-////        byte[] encryptedBytes = hexToBytes(encryptedHex);
-////        byte[] decryptedBytes = TripleDES.decrypt3D(encryptedBytes, key);
-////        String decryptedText = new String(decryptedBytes, StandardCharsets.UTF_8);
-////        inputTextField.setText(decryptedText);
-//        informationBlock.setText("Sukces: Deszyfrowanie zakończone.");
-//    }
+            BigInteger decrypted = ElGamal.decrypt(cipher, privateKey);
+            String message = new String(decrypted.toByteArray(), StandardCharsets.UTF_8);
 
-@FXML
-protected void decryptText() {
-    informationBlock.setText("");
+            inputTextField.setText(message);
+            informationBlock.setText("Sukces: Odszyfrowano wiadomość.");
 
-
-    String encryptedText = encryptedTextField.getText();
-    String aText = keyTextField3.getText(); // prywatny klucz
-    String pText = keyTextField4.getText(); // p
-
-    if (encryptedText.isEmpty()) {
-        informationBlock.setText("Błąd: Brak szyfrogramu do odszyfrowania!");
-        return;
-    }
-
-    if (aText.isEmpty() || pText.isEmpty()) {
-        informationBlock.setText("Błąd: Brakuje klucza prywatnego (a) lub p!");
-        return;
-    }
-
-    try {
-        BigInteger a = new BigInteger((aText),16);
-        BigInteger p = new BigInteger((pText),16);
-
-        // Parsowanie szyfrogramu z formatu np. "(c1,c2)" lub "c1 c2"
-        String[] parts = encryptedText.replaceAll("[^0-9, ]", "").split("[, ]+");
-        if (parts.length != 2) {
-            informationBlock.setText("Błąd: Nieprawidłowy format szyfrogramu!");
-            return;
+        } catch (NumberFormatException e) {
+            informationBlock.setText("Błąd: Klucze i szyfrogram muszą być liczbami!");
+        } catch (Exception e) {
+            informationBlock.setText("Błąd deszyfrowania: " + e.getMessage());
         }
-
-        BigInteger c1 = new BigInteger(parts[0]);
-        BigInteger c2 = new BigInteger(parts[1]);
-
-        ElGamal.PrivateKey privateKey = new ElGamal.PrivateKey(p, a);
-        ElGamal.CipherText cipher = new ElGamal.CipherText(c1, c2);
-
-        BigInteger decrypted = ElGamal.decrypt(cipher, privateKey);
-        String message = new String(decrypted.toByteArray(), StandardCharsets.UTF_8);
-
-        inputTextField.setText(message);
-        informationBlock.setText("Sukces: Odszyfrowano wiadomość.");
-
-    } catch (NumberFormatException e) {
-        informationBlock.setText("Błąd: Klucze i szyfrogram muszą być liczbami!");
-    } catch (Exception e) {
-        informationBlock.setText("Błąd deszyfrowania: " + e.getMessage());
     }
-}
 
 
 
