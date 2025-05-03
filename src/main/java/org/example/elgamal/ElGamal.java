@@ -2,6 +2,8 @@ package org.example.elgamal;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ElGamal {
 
@@ -69,21 +71,65 @@ public class ElGamal {
 
     }
 
-    // Szyfrowanie
-    public static CipherText encrypt(BigInteger message, PublicKey pub) {
+    // Zmieniona metoda szyfrowania, obsługująca teksty większe niż p
+    public static ArrayList<CipherText> encrypt(BigInteger message, PublicKey pub) {
         SecureRandom random = new SecureRandom();
-        BigInteger r = new BigInteger(pub.p.bitLength() - 1, random).mod(pub.p.subtract(BigInteger.ONE)).add(BigInteger.ONE);
+        ArrayList<CipherText> cipherTexts = new ArrayList<>();
+
+        // Podziel wiadomość na kawałki mniejsze niż p
+        byte[] messageBytes = message.toByteArray();
+        int maxMessageSize = pub.p.bitLength() / 8;  // Maksymalny rozmiar wiadomości (w bajtach)
+
+        int numChunks = (int) Math.ceil((double) messageBytes.length / maxMessageSize);
+        for (int i = 0; i < numChunks; i++) {
+            // Tworzymy fragment wiadomości
+            int start = i * maxMessageSize;
+            int end = Math.min((i + 1) * maxMessageSize, messageBytes.length);
+            byte[] chunk = Arrays.copyOfRange(messageBytes, start, end);
+
+            BigInteger chunkMessage = new BigInteger(chunk);
+
+            // Generowanie r
+            BigInteger r = new BigInteger(pub.p.bitLength() - 1, random).mod(pub.p.subtract(BigInteger.ONE)).add(BigInteger.ONE);
+            BigInteger c1 = pub.g.modPow(r, pub.p);
+            BigInteger s = pub.h.modPow(r, pub.p);
+            BigInteger c2 = chunkMessage.multiply(s).mod(pub.p);
+
+            // Dodajemy CipherText
+            cipherTexts.add(new CipherText(c1, c2));
+        }
+
+        return cipherTexts;
+    }
+
+    // Zmieniona metoda deszyfrowania, obsługująca długie teksty
+    public static BigInteger decrypt(ArrayList<CipherText> cipherTexts, PrivateKey priv) {
+        BigInteger decryptedMessage = BigInteger.ZERO;
+        for (CipherText cipher : cipherTexts) {
+            BigInteger s = cipher.c1.modPow(priv.a, priv.p);
+            BigInteger sInv = s.modInverse(priv.p);
+            BigInteger chunk = cipher.c2.multiply(sInv).mod(priv.p);
+
+            // Łączymy fragmenty
+            decryptedMessage = decryptedMessage.shiftLeft(chunk.bitLength()).add(chunk);
+        }
+
+        return decryptedMessage;
+    }
+    public static CipherText encryptChar(BigInteger m, PublicKey pub) {
+        SecureRandom rnd = new SecureRandom();
+        BigInteger r = new BigInteger(pub.p.bitLength() - 1, rnd).mod(pub.p.subtract(BigInteger.ONE)).add(BigInteger.ONE);
         BigInteger c1 = pub.g.modPow(r, pub.p);
         BigInteger s = pub.h.modPow(r, pub.p);
-        BigInteger c2 = message.multiply(s).mod(pub.p);
+        BigInteger c2 = m.multiply(s).mod(pub.p);
         return new CipherText(c1, c2);
     }
 
-    // Deszyfrowanie
-    public static BigInteger decrypt(CipherText cipher, PrivateKey priv) {
-        BigInteger s = cipher.c1.modPow(priv.a, priv.p);
+    public static BigInteger decryptChar(CipherText ct, PrivateKey priv) {
+        BigInteger s = ct.c1.modPow(priv.a, priv.p);
         BigInteger sInv = s.modInverse(priv.p);
-        return cipher.c2.multiply(sInv).mod(priv.p);
+        return ct.c2.multiply(sInv).mod(priv.p);
     }
+
 
 }

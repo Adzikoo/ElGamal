@@ -6,13 +6,15 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class KryptoController {
 
     @FXML
@@ -269,7 +271,7 @@ public class KryptoController {
 
     @FXML
     protected void onGenerateKeyClick() {
-        keyPair = ElGamal.generateKeys(2048);
+        keyPair = ElGamal.generateKeys(512);
         informationBlock.setText("Wygenerowano klucze ElGamala");
         keyTextField1.setText(keyPair.publicKey.g.toString(16));
         keyTextField2.setText(keyPair.publicKey.h.toString(16));
@@ -300,12 +302,12 @@ public class KryptoController {
     protected void encryptText() {
         informationBlock.setText("");
         encryptedTextField.setText("");
+
         String plainText = inputTextField.getText();
 
         try {
             BigInteger g = new BigInteger(keyTextField1.getText(), 16);
             BigInteger h = new BigInteger(keyTextField2.getText(), 16);
-            BigInteger a = new BigInteger(keyTextField3.getText(), 16); // tylko do deszyfrowania, tu niepotrzebne
             BigInteger p = new BigInteger(keyTextField4.getText(), 16);
 
             ElGamal.PublicKey publicKey = new ElGamal.PublicKey(p, g, h);
@@ -315,18 +317,23 @@ public class KryptoController {
                 return;
             }
 
-            BigInteger m = new BigInteger(plainText.getBytes(StandardCharsets.UTF_8));
+            ArrayList<ElGamal.CipherText> encrypted = new ArrayList<>();
 
-            if (m.compareTo(p) >= 0) {
-                informationBlock.setText("Błąd: wiadomość zbyt duża dla p.");
-                return;
+            for (char c : plainText.toCharArray()) {
+                BigInteger m = BigInteger.valueOf((int) c);
+                if (m.compareTo(p) >= 0) {
+                    informationBlock.setText("Błąd: znak '" + c + "' większy niż p.");
+                    return;
+                }
+                encrypted.add(ElGamal.encryptChar(m, publicKey));
             }
 
-            ElGamal.CipherText cipher = ElGamal.encrypt(m, publicKey);
-            encryptedTextField.setText(cipher.toString());
+            // Zapisz każdy szyfrogram jako "(c1,c2)"
+            String encryptedString = encrypted.stream()
+                    .map(ElGamal.CipherText::toString)
+                    .collect(Collectors.joining(" "));
+            encryptedTextField.setText(encryptedString);
             informationBlock.setText("Sukces: Zaszyfrowano wiadomość.");
-        } catch (NumberFormatException e) {
-            informationBlock.setText("Błąd: Klucze muszą być liczbami (HEX).");
         } catch (Exception e) {
             informationBlock.setText("Błąd szyfrowania: " + e.getMessage());
         }
@@ -337,50 +344,38 @@ public class KryptoController {
     protected void decryptText() {
         informationBlock.setText("");
 
-
         String encryptedText = encryptedTextField.getText();
-        String aText = keyTextField3.getText(); // prywatny klucz
-        String pText = keyTextField4.getText(); // p
+        String aText = keyTextField3.getText();
+        String pText = keyTextField4.getText();
 
         if (encryptedText.isEmpty()) {
-            informationBlock.setText("Błąd: Brak szyfrogramu do odszyfrowania!");
-            return;
-        }
-
-        if (aText.isEmpty() || pText.isEmpty()) {
-            informationBlock.setText("Błąd: Brakuje klucza prywatnego (a) lub p!");
+            informationBlock.setText("Błąd: Brak szyfrogramu!");
             return;
         }
 
         try {
-            BigInteger a = new BigInteger((aText),16);
-            BigInteger p = new BigInteger((pText),16);
+            BigInteger a = new BigInteger(aText, 16);
+            BigInteger p = new BigInteger(pText, 16);
+            ElGamal.PrivateKey privKey = new ElGamal.PrivateKey(p, a);
 
-            // Parsowanie szyfrogramu z formatu np. "(c1,c2)" lub "c1 c2"
-            String[] parts = encryptedText.replaceAll("[^0-9, ]", "").split("[, ]+");
-            if (parts.length != 2) {
-                informationBlock.setText("Błąd: Nieprawidłowy format szyfrogramu!");
-                return;
+            String[] cipherPairs = encryptedText.trim().split(" ");
+            StringBuilder result = new StringBuilder();
+
+            for (String pair : cipherPairs) {
+                ElGamal.CipherText ct = ElGamal.CipherText.fromString(pair);
+                BigInteger m = ElGamal.decryptChar(ct, privKey);
+                result.append((char) m.intValue());
             }
 
-            BigInteger c1 = new BigInteger(parts[0]);
-            BigInteger c2 = new BigInteger(parts[1]);
-
-            ElGamal.PrivateKey privateKey = new ElGamal.PrivateKey(p, a);
-            ElGamal.CipherText cipher = new ElGamal.CipherText(c1, c2);
-
-            BigInteger decrypted = ElGamal.decrypt(cipher, privateKey);
-            String message = new String(decrypted.toByteArray(), StandardCharsets.UTF_8);
-
-            inputTextField.setText(message);
+            inputTextField.setText(result.toString());
             informationBlock.setText("Sukces: Odszyfrowano wiadomość.");
-
-        } catch (NumberFormatException e) {
-            informationBlock.setText("Błąd: Klucze i szyfrogram muszą być liczbami!");
         } catch (Exception e) {
             informationBlock.setText("Błąd deszyfrowania: " + e.getMessage());
         }
     }
+
+
+
 
 
 
@@ -482,22 +477,29 @@ public class KryptoController {
             ElGamal.PublicKey publicKey = new ElGamal.PublicKey(p, g, h);
 
             byte[] fileBytes = Files.readAllBytes(selectedFile.toPath());
-            BigInteger m = new BigInteger(1, fileBytes); // 1 = pozytywny BigInteger
+            ArrayList<ElGamal.CipherText> encrypted = new ArrayList<>();
 
-            if (m.compareTo(p) >= 0) {
-                informationBlock.setText("Błąd: Plik zbyt duży względem p!");
-                return;
+            for (byte b : fileBytes) {
+                BigInteger m = BigInteger.valueOf(b & 0xFF); // bajt jako dodatni BigInteger
+                if (m.compareTo(p) >= 0) {
+                    informationBlock.setText("Błąd: Bajt większy lub równy p!");
+                    return;
+                }
+                encrypted.add(ElGamal.encryptChar(m, publicKey));
             }
 
-            ElGamal.CipherText cipher = ElGamal.encrypt(m, publicKey);
-            String encryptedText = cipher.toString();
+            // Zapisujemy zaszyfrowane bajty jako linie tekstu
+            File outFile = new File(filePath);
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outFile))) {
+                for (ElGamal.CipherText ct : encrypted) {
+                    writer.write(ct.toString());
+                    writer.newLine();
+                }
+            }
 
-            // Zapis zaszyfrowanego tekstu jako String (np. do .txt)
-            Files.writeString(selectedFile.toPath(), encryptedText, StandardCharsets.UTF_8);
-
-            informationBlock.setText("Sukces: Plik został zaszyfrowany.");
+            informationBlock.setText("Sukces: Zaszyfrowano do '" + outFile.getName() + "'");
         } catch (NumberFormatException e) {
-            informationBlock.setText("Błąd: Klucze muszą być liczbami (HEX).");
+            informationBlock.setText("Błąd: Klucze muszą być w HEX.");
         } catch (IOException e) {
             informationBlock.setText("Błąd odczytu/zapisu pliku.");
         } catch (Exception e) {
@@ -505,7 +507,8 @@ public class KryptoController {
         }
     }
 
-    @FXML
+
+       @FXML
     protected void onDecryptFileClick() {
         String filePath = filePathDecrypt.getText();
         informationBlock.setText("");
@@ -522,29 +525,38 @@ public class KryptoController {
         }
 
         try {
-            BigInteger g = new BigInteger(keyTextField1.getText(), 16);
-            BigInteger h = new BigInteger(keyTextField2.getText(), 16);
-            BigInteger a = new BigInteger(keyTextField3.getText(), 16);
+
+            BigInteger a = new BigInteger(keyTextField3.getText(), 16); // prywatny
             BigInteger p = new BigInteger(keyTextField4.getText(), 16);
 
             ElGamal.PrivateKey privateKey = new ElGamal.PrivateKey(p, a);
 
-            String encryptedText = Files.readString(selectedFile.toPath(), StandardCharsets.UTF_8);
-            ElGamal.CipherText cipher = ElGamal.CipherText.fromString(encryptedText);
+            List<String> lines = Files.readAllLines(selectedFile.toPath());
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-            BigInteger decrypted = ElGamal.decrypt(cipher, privateKey);
+            for (String line : lines) {
+                if (line.isBlank()) continue;
+                // Parsujemy linie w formacie (c1,c2)
+                line = line.trim().replace("(", "").replace(")", "");
+                String[] parts = line.split(",");
+                if (parts.length != 2) {
+                    informationBlock.setText("Błąd: Nieprawidłowy format linii!");
+                    return;
+                }
+                BigInteger c1 = new BigInteger(parts[0].trim());
+                BigInteger c2 = new BigInteger(parts[1].trim());
+                ElGamal.CipherText ct = new ElGamal.CipherText(c1, c2);
+                BigInteger decrypted = ElGamal.decryptChar(ct, privateKey);
 
-            byte[] decryptedBytes = decrypted.toByteArray();
-            if (decryptedBytes[0] == 0) {
-                decryptedBytes = Arrays.copyOfRange(decryptedBytes, 1, decryptedBytes.length);
+                output.write(decrypted.byteValue());
             }
 
-            // Zapis przywróconego pliku
-            Files.write(selectedFile.toPath(), decryptedBytes);
+            File outFile = new File( filePath );
+            Files.write(outFile.toPath(), output.toByteArray());
 
-            informationBlock.setText("Sukces: Plik został odszyfrowany.");
+            informationBlock.setText("Sukces: Odszyfrowano do '" + outFile.getName() + "'");
         } catch (NumberFormatException e) {
-            informationBlock.setText("Błąd: Klucze muszą być liczbami (HEX).");
+            informationBlock.setText("Błąd: Klucze muszą być w HEX.");
         } catch (IOException e) {
             informationBlock.setText("Błąd odczytu/zapisu pliku.");
         } catch (Exception e) {
