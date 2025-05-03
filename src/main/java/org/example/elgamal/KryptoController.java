@@ -19,7 +19,7 @@ public class KryptoController {
     private TextField informationBlock;
 
     @FXML
-    private TextField keyTextField1, keyTextField2, keyTextField3, keyTextField4,loadKey;
+    private TextField keyTextField1, keyTextField2, keyTextField3, keyTextField4,loadKey,saveKey;
 
     @FXML
     private TextArea inputTextField;
@@ -104,6 +104,101 @@ public class KryptoController {
             event.setDropCompleted(success);
             event.consume();
         });
+        // Obsługa przeciągania pliku do pola saveKey
+        saveKey.setOnDragOver(event -> {
+            if (event.getGestureSource() != saveKey && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(javafx.scene.input.TransferMode.COPY);
+            }
+            event.consume();
+        });
+
+        saveKey.setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                File file = db.getFiles().get(0); // pierwszy plik
+                saveKey.setText(file.getAbsolutePath());
+                success = true;
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+        // Obsługa przeciągania pliku do pola filePathEncryptJawny
+        filePathEncryptJawny.setOnDragOver(event -> {
+            if (event.getGestureSource() != filePathEncryptJawny && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(javafx.scene.input.TransferMode.COPY);
+            }
+            event.consume();
+        });
+
+        filePathEncryptJawny.setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                File file = db.getFiles().get(0); // pierwszy plik
+                filePathEncryptJawny.setText(file.getAbsolutePath());
+                success = true;
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+        // Obsługa przeciągania pliku do pola filePathDecryptSzyfrogram
+        filePathDecryptSzyfrogram.setOnDragOver(event -> {
+            if (event.getGestureSource() != filePathDecryptSzyfrogram && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(javafx.scene.input.TransferMode.COPY);
+            }
+            event.consume();
+        });
+
+        filePathDecryptSzyfrogram.setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                File file = db.getFiles().get(0); // pierwszy plik
+                filePathDecryptSzyfrogram.setText(file.getAbsolutePath());
+                success = true;
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+        // Obsługa przeciągania pliku do pola filePathSaveJawny
+        filePathSaveJawny.setOnDragOver(event -> {
+            if (event.getGestureSource() != filePathSaveJawny && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(javafx.scene.input.TransferMode.COPY);
+            }
+            event.consume();
+        });
+
+        filePathSaveJawny.setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                File file = db.getFiles().get(0); // pierwszy plik
+                filePathSaveJawny.setText(file.getAbsolutePath());
+                success = true;
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+        // Obsługa przeciągania pliku do pola filePathSaveSzyfrogram
+        filePathSaveSzyfrogram.setOnDragOver(event -> {
+            if (event.getGestureSource() != filePathSaveSzyfrogram && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(javafx.scene.input.TransferMode.COPY);
+            }
+            event.consume();
+        });
+
+        filePathSaveSzyfrogram.setOnDragDropped(event -> {
+            var db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                File file = db.getFiles().get(0); // pierwszy plik
+                filePathSaveSzyfrogram.setText(file.getAbsolutePath());
+                success = true;
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
     }
 
     @FXML
@@ -174,7 +269,7 @@ public class KryptoController {
 
     @FXML
     protected void onGenerateKeyClick() {
-        keyPair = ElGamal.generateKeys(2048); // np. 64-bit dla testów
+        keyPair = ElGamal.generateKeys(2048);
         informationBlock.setText("Wygenerowano klucze ElGamala");
         keyTextField1.setText(keyPair.publicKey.g.toString(16));
         keyTextField2.setText(keyPair.publicKey.h.toString(16));
@@ -188,7 +283,7 @@ public class KryptoController {
         if (radioText.isSelected()) {
             encryptText();
         } if (radioFile.isSelected()){
-            //onEncryptFileClick();
+            onEncryptFileClick();
         }
     }
 
@@ -197,7 +292,7 @@ public class KryptoController {
         if (radioText.isSelected()) {
             decryptText();
         } if (radioFile.isSelected()) {
-            //onDecryptFileClick();
+            onDecryptFileClick();
         }
     }
 
@@ -307,21 +402,21 @@ public class KryptoController {
 
 
 
-    // Konwersja HEX -> bajty
-    private byte[] hexToBytes(String hex) {
-        int len = hex.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i + 1), 16));
-        }
-        return data;
-    }
-
-    // Walidacja poprawności klucza (16 znaków HEX)
-    private boolean isValidHexKey(String key) {
-        return key != null && key.matches("[0-9A-Fa-f]{16}");
-    }
+//    // Konwersja HEX -> bajty
+//    private byte[] hexToBytes(String hex) {
+//        int len = hex.length();
+//        byte[] data = new byte[len / 2];
+//        for (int i = 0; i < len; i += 2) {
+//            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+//                    + Character.digit(hex.charAt(i + 1), 16));
+//        }
+//        return data;
+//    }
+//
+//    // Walidacja poprawności klucza (16 znaków HEX)
+//    private boolean isValidHexKey(String key) {
+//        return key != null && key.matches("[0-9A-Fa-f]{16}");
+//    }
 
 
 
@@ -363,99 +458,108 @@ public class KryptoController {
     }
 
 
-//    @FXML
-//    protected void onEncryptFileClick() {
-//        String filePath = filePathEncrypt.getText();
-//        if (filePath.isEmpty()) {
-//            informationBlock.setText("Błąd: Brak ścieżki do pliku!");
-//            return;
-//        }
-//
-//        File selectedFile = new File(filePath);
-//        if (!selectedFile.exists()) {
-//            informationBlock.setText("Błąd: Plik nie istnieje!");
-//            return;
-//        }
-//
-//        try {
-//            byte[] fileBytes = Files.readAllBytes(selectedFile.toPath());
-//
-//            String keyHex1 = keyTextField.getText();
-//            String keyHex2 = keyTextField2.getText();
-//            String keyHex3 = keyTextField3.getText();
-//
-//            if (!isValidHexKey(keyHex1) || !isValidHexKey(keyHex2) || !isValidHexKey(keyHex3)) {
-//                informationBlock.setText("Błąd: Brak kluczy!");
-//                return;
-//            }
-//
-//            byte[] keyBytes1 = hexToBytes(keyHex1);
-//            byte[] keyBytes2 = hexToBytes(keyHex2);
-//            byte[] keyBytes3 = hexToBytes(keyHex3);
-//
-//            TripleDES.Key key = new TripleDES.Key(keyBytes1, keyBytes2, keyBytes3);
-//
-//            byte[] encryptedData = TripleDES.encrypt3D(fileBytes, key);
-//
-//            Files.write(selectedFile.toPath(), encryptedData);
-//
-//            informationBlock.setText("Plik został zaszyfrowany.");
-//        } catch (IOException e) {
-//            informationBlock.setText("Błąd odczytu/zapisu pliku.");
-//        }
-//        informationBlock.setText("Sukces: Szyfrowanie zakończone.");
-//    }
-//
-//    @FXML
-//    protected void onDecryptFileClick() {
-//        String filePath = filePathDecrypt.getText();
-//        if (filePath.isEmpty()) {
-//            informationBlock.setText("Błąd: Brak ścieżki do pliku!");
-//            return;
-//        }
-//
-//        File selectedFile = new File(filePath);
-//        if (!selectedFile.exists()) {
-//            informationBlock.setText("Błąd: Plik nie istnieje!");
-//            return;
-//        }
-//
-//        try {
-//            byte[] fileBytes = Files.readAllBytes(selectedFile.toPath());
-//
-//            String keyHex1 = keyTextField.getText();
-//            String keyHex2 = keyTextField2.getText();
-//            String keyHex3 = keyTextField3.getText();
-//
-//            if (!isValidHexKey(keyHex1) || !isValidHexKey(keyHex2) || !isValidHexKey(keyHex3)) {
-//                informationBlock.setText("Błąd: Brak kluczy!");
-//                return;
-//            }
-//
-//            byte[] keyBytes1 = hexToBytes(keyHex1);
-//            byte[] keyBytes2 = hexToBytes(keyHex2);
-//            byte[] keyBytes3 = hexToBytes(keyHex3);
-//
-//            TripleDES.Key key = new TripleDES.Key(keyBytes1, keyBytes2, keyBytes3);
-//
-//            byte[] decryptedData = TripleDES.decrypt3D(fileBytes, key);
-//
-//            Files.write(selectedFile.toPath(), decryptedData);
-//
-//            informationBlock.setText("Plik został odszyfrowany.");
-//        } catch (IOException e) {
-//            informationBlock.setText("Błąd odczytu/zapisu pliku.");
-//        }
-//        informationBlock.setText("Sukces: Deszyfrowanie zakończone.");
-//    }
+    @FXML
+    protected void onEncryptFileClick() {
+        String filePath = filePathEncrypt.getText();
+        informationBlock.setText("");
 
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
+        if (filePath.isEmpty()) {
+            informationBlock.setText("Błąd: Brak ścieżki do pliku!");
+            return;
         }
-        return sb.toString();
+
+        File selectedFile = new File(filePath);
+        if (!selectedFile.exists()) {
+            informationBlock.setText("Błąd: Plik nie istnieje!");
+            return;
+        }
+
+        try {
+            BigInteger g = new BigInteger(keyTextField1.getText(), 16);
+            BigInteger h = new BigInteger(keyTextField2.getText(), 16);
+            BigInteger p = new BigInteger(keyTextField4.getText(), 16);
+
+            ElGamal.PublicKey publicKey = new ElGamal.PublicKey(p, g, h);
+
+            byte[] fileBytes = Files.readAllBytes(selectedFile.toPath());
+            BigInteger m = new BigInteger(1, fileBytes); // 1 = pozytywny BigInteger
+
+            if (m.compareTo(p) >= 0) {
+                informationBlock.setText("Błąd: Plik zbyt duży względem p!");
+                return;
+            }
+
+            ElGamal.CipherText cipher = ElGamal.encrypt(m, publicKey);
+            String encryptedText = cipher.toString();
+
+            // Zapis zaszyfrowanego tekstu jako String (np. do .txt)
+            Files.writeString(selectedFile.toPath(), encryptedText, StandardCharsets.UTF_8);
+
+            informationBlock.setText("Sukces: Plik został zaszyfrowany.");
+        } catch (NumberFormatException e) {
+            informationBlock.setText("Błąd: Klucze muszą być liczbami (HEX).");
+        } catch (IOException e) {
+            informationBlock.setText("Błąd odczytu/zapisu pliku.");
+        } catch (Exception e) {
+            informationBlock.setText("Błąd szyfrowania: " + e.getMessage());
+        }
     }
+
+    @FXML
+    protected void onDecryptFileClick() {
+        String filePath = filePathDecrypt.getText();
+        informationBlock.setText("");
+
+        if (filePath.isEmpty()) {
+            informationBlock.setText("Błąd: Brak ścieżki do pliku!");
+            return;
+        }
+
+        File selectedFile = new File(filePath);
+        if (!selectedFile.exists()) {
+            informationBlock.setText("Błąd: Plik nie istnieje!");
+            return;
+        }
+
+        try {
+            BigInteger g = new BigInteger(keyTextField1.getText(), 16);
+            BigInteger h = new BigInteger(keyTextField2.getText(), 16);
+            BigInteger a = new BigInteger(keyTextField3.getText(), 16);
+            BigInteger p = new BigInteger(keyTextField4.getText(), 16);
+
+            ElGamal.PrivateKey privateKey = new ElGamal.PrivateKey(p, a);
+
+            String encryptedText = Files.readString(selectedFile.toPath(), StandardCharsets.UTF_8);
+            ElGamal.CipherText cipher = ElGamal.CipherText.fromString(encryptedText);
+
+            BigInteger decrypted = ElGamal.decrypt(cipher, privateKey);
+
+            byte[] decryptedBytes = decrypted.toByteArray();
+            if (decryptedBytes[0] == 0) {
+                decryptedBytes = Arrays.copyOfRange(decryptedBytes, 1, decryptedBytes.length);
+            }
+
+            // Zapis przywróconego pliku
+            Files.write(selectedFile.toPath(), decryptedBytes);
+
+            informationBlock.setText("Sukces: Plik został odszyfrowany.");
+        } catch (NumberFormatException e) {
+            informationBlock.setText("Błąd: Klucze muszą być liczbami (HEX).");
+        } catch (IOException e) {
+            informationBlock.setText("Błąd odczytu/zapisu pliku.");
+        } catch (Exception e) {
+            informationBlock.setText("Błąd deszyfrowania: " + e.getMessage());
+        }
+    }
+
+
+//    private String bytesToHex(byte[] bytes) {
+//        StringBuilder sb = new StringBuilder();
+//        for (byte b : bytes) {
+//            sb.append(String.format("%02x", b));
+//        }
+//        return sb.toString();
+//    }
 
 
 

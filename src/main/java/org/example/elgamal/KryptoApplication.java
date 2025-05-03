@@ -12,7 +12,7 @@ public class KryptoApplication extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(KryptoApplication.class.getResource("view-ElGamal.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
-        stage.setTitle("Triple DES Algorithm");
+        stage.setTitle("ElGamal Encryption");
         stage.setScene(scene);
         stage.setMinHeight(scene.getHeight());
         stage.setMinWidth(scene.getWidth());
